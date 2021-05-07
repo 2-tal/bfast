@@ -114,6 +114,29 @@ def run_bfast(backend):
     return run_bfast_(backend)
 
 
+def test(quantifier, pred, actual, expect, rel_err=False):
+    stmt = pred(actual, expect)
+    check = quantifier(stmt)
+    if check:
+      print("\033[92m PASSED \033[0m")
+    else:
+      print("\033[91m FAILED \033[0m")
+      inds = np.where(~stmt)
+      print("| Num. differences", np.sum(~stmt))
+      print("| Expected", expect[inds])
+      print("| Actual  ", actual[inds])
+      if rel_err:
+        print("| Relative absolute error")
+        rel_err = np.abs((expect - actual)/expect)
+        rel_err = rel_err[~np.isnan(rel_err)]
+        per_err = rel_err * 100
+        print("| Max error  {:10.5e} ({:.4f}%)".format(np.max(rel_err),
+                                                       np.max(per_err)))
+        print("| Min error  {:10.5e} ({:.4f}%)".format(np.min(rel_err),
+                                                       np.min(per_err)))
+        print("| Mean error {:10.5e} ({:.4f}%)".format(np.mean(rel_err),
+                                                       np.mean(per_err)))
+
 
 if __name__ == "__main__":
     # breaks_p, means_p, magnitudes_p, valids_p = run_bfast("python")
@@ -178,3 +201,10 @@ if __name__ == "__main__":
     plt.clf()
     plt.imshow(valids_diff, cmap="Greys")
     plt.savefig("valids_diff.png")
+
+    print("np.all(breaks_o == breaks_p):", end="")
+    test(np.all, np.equal, breaks_o, breaks_p)
+    print("np.all(np.isclose(means_o, means_p)):", end="")
+    test(np.all, np.isclose, means_o, means_p, rel_err=True)
+    print("np.all(valids_o == valids_p):", end="")
+    test(np.all, np.equal, valids_o, valids_p)
