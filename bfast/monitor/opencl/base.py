@@ -108,8 +108,8 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
         self.futobj = bfastfinal(command_queue=self.queue,
                                  interactive=False,
                                  default_tile_size=8,
-                                 default_reg_tile_size=3,
-                                 sizes=self._get_futhark_params())
+                                 default_reg_tile_size=3)
+                                 # sizes=self._get_futhark_params())
 
     def _init_device(self, platform_id, device_id):
         """ Initializes the device."""
