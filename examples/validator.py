@@ -65,6 +65,7 @@ def run_bfast_(backend,
     # fit BFASTMontiro model
     model = BFASTMonitor(
             start_monitor,
+            history="all",
             freq=freq,
             k=k,
             hfrac=hfrac,

@@ -16,7 +16,7 @@ import "helpers"
 -- | implementation is in this entry point
 --   the outer map is distributed directly
 let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
-                  (hfrac: f32) (lam: f32)
+                  (hfrac: f32) (lam: f32) (hist: i64)
                   (mappingindices : [N]i32)
                   (images : [m][N]f32) =
   ----------------------------------
@@ -38,6 +38,9 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   let Xh  = X[:,:n64]
   let Xth = Xt[:n64,:]
   let Yh  = images[:,:n64]
+
+  -- Switch btwn. "all" and "ROC" based on hist.
+  let _hist = if hist == 0 then 0 else 1
 
   ----------------------------------
   -- 2. mat-mat multiplication    --
@@ -168,25 +171,25 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
 
 -- | Entry points
 entry mainDetailed [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
-                  (hfrac: f32) (lam: f32)
+                  (hfrac: f32) (lam: f32) (hist: i64)
                   (mappingindices : [N]i32)
                   (images : [m][N]f32) =
-  mainFun trend k n freq hfrac lam mappingindices images
+  mainFun trend k n freq hfrac lam hist mappingindices images
 
 entry mainMagnitude [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
-                           (hfrac: f32) (lam: f32)
+                           (hfrac: f32) (lam: f32) (hist: i64)
                            (mappingindices : [N]i32)
                            (images : [m][N]f32) =
   let (_, Nss, _, _, _, _, _, breaks, means, magnitudes, _, _) =
-    mainFun trend k n freq hfrac lam mappingindices images
+    mainFun trend k n freq hfrac lam hist mappingindices images
   in (Nss, breaks, means, magnitudes)
 
 entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
-                  (hfrac: f32) (lam: f32)
+                  (hfrac: f32) (lam: f32) (hist: i64)
                   (mappingindices : [N]i32)
                   (images : [m][N]f32) =
   let (_, Nss, _, _, _, _, _, breaks, means, _, _, _) =
-    mainFun trend k n freq hfrac lam mappingindices images
+    mainFun trend k n freq hfrac lam hist mappingindices images
   in (Nss, breaks, means)
 
 entry convertToFloat [m][n][p] (nan_value: i16) (images : [m][n][p]i16) =

@@ -23,6 +23,7 @@ class BFASTMonitorPython(BFASTMonitorBase):
 
     def __init__(self,
                  start_monitor,
+                 history="all",
                  freq=365,
                  k=3,
                  hfrac=0.25,
@@ -41,6 +42,14 @@ class BFASTMonitorPython(BFASTMonitorBase):
     start_monitor : datetime object
         A datetime object specifying the start of
         the monitoring phase.
+
+    history : str, default "all"
+        Specification of the start of a stable history period.
+        Can be one of "ROC" and "all". If set to "ROC", a
+        reverse-ordered CUSUM test will be employed to
+        automatically detect the start of a stable history
+        period. If set to "all", the start of the stable
+        history period is the beginning of the time series.
 
     freq : int, default 365
         The frequency for the seasonal model.
@@ -81,6 +90,7 @@ class BFASTMonitorPython(BFASTMonitorBase):
     """
     def __init__(self,
                  start_monitor,
+                 history="all",
                  freq=365,
                  k=3,
                  hfrac=0.25,
@@ -91,6 +101,7 @@ class BFASTMonitorPython(BFASTMonitorBase):
                  use_mp=False
                  ):
         super().__init__(start_monitor,
+                         history,
                          freq,
                          k=k,
                          hfrac=hfrac,

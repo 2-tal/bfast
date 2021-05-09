@@ -37,6 +37,13 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
     start_monitor : datetime
         A datetime object specifying the start of
         the monitoring phase.
+    history : str, default "all"
+        Specification of the start of a stable history period.
+        Can be one of "ROC" and "all". If set to "ROC", a
+        reverse-ordered CUSUM test will be employed to
+        automatically detect the start of a stable history
+        period. If set to "all", the start of the stable
+        history period is the beginning of the time series.
     freq : int, default 365
         The frequency for the seasonal model
     k : int, default 3
@@ -71,6 +78,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
     """
     def __init__(self,
                  start_monitor,
+                 history="all",
                  freq=365,
                  k=3,
                  hfrac=0.25,
@@ -89,6 +97,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
             raise Exception("Current implementation can only handle the following values for k: {}".format(k_valid))
 
         super().__init__(start_monitor,
+                         history,
                          freq,
                          k=k,
                          hfrac=hfrac,
@@ -101,6 +110,11 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
         self.find_magnitudes = find_magnitudes
         self.platform_id = platform_id
         self.device_id = device_id
+
+        if self.history == "all":
+          self.history_num = 0
+        elif self.history == "ROC":
+          self.history_num = 1
 
         # initialize device
         self._init_device(platform_id, device_id)
@@ -345,6 +359,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
                                                   self.freq,
                                                   self.hfrac,
                                                   self.lam,
+                                                  self.history_num,
                                                   mapped_indices_cl, y_cl)
         elif self.find_magnitudes:
             Ns, \
@@ -356,6 +371,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
                                                        self.freq,
                                                        self.hfrac,
                                                        self.lam,
+                                                       self.history_num,
                                                        mapped_indices_cl, y_cl)
         else:
             Ns, breaks, means = self.futobj.main(trend,
@@ -364,6 +380,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
                                                  self.freq,
                                                  self.hfrac,
                                                  self.lam,
+                                                 self.history_num,
                                                  mapped_indices_cl, y_cl)
 
         end = time.time()
