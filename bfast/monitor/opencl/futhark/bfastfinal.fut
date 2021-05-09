@@ -37,9 +37,17 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
 
   -- Switch btwn. "all" and "ROC" based on hist.
   let _hist = if hist == 0 then 0 else 1
+  -- Compute stable history.
+  let stable_history = map (\y -> if f32.isnan y[0]
+                                  then 5
+                                  else if y[0] % 2.0f32 == 0.0f32
+                                       then 3
+                                       else 0
+                           ) images
   -- Subset history period.
-  let images =
-    map (map2 (\i yi -> if i < 5 then f32.nan else yi) (iota N)) images
+  let images = map2 (\j ->
+                       map2 (\i yi -> if i < j then f32.nan else yi) (iota N)
+                    ) stable_history images
   let Xh  = X[:,:n64]
   let Xth = Xt[:n64,:]
   let Yh  = images[:,:n64]

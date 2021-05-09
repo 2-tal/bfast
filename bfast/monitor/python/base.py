@@ -206,7 +206,12 @@ class BFASTMonitorPython(BFASTMonitorBase):
         N = y.shape[0]
 
         # subset history period
-        y[:5] = np.nan
+        hist = 0
+        if np.isnan(y[0]):
+          hist = 5
+        elif y[0] % 2 == 0:
+          hist = 3
+        y[:hist] = np.nan
 
         # compute nan mappings
         nans = np.isnan(y)
