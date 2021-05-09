@@ -35,12 +35,14 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   let zero = r32 <| i32.i64 <| (N * N + 2 * N + 1) / (N + 1) - N - 1
   let Xt  = intrinsics.opaque <| map (map (+zero)) (copy (transpose X))
 
+  -- Switch btwn. "all" and "ROC" based on hist.
+  let _hist = if hist == 0 then 0 else 1
+  -- Subset history period.
+  let images =
+    map (map2 (\i yi -> if i < 5 then f32.nan else yi) (iota N)) images
   let Xh  = X[:,:n64]
   let Xth = Xt[:n64,:]
   let Yh  = images[:,:n64]
-
-  -- Switch btwn. "all" and "ROC" based on hist.
-  let _hist = if hist == 0 then 0 else 1
 
   ----------------------------------
   -- 2. mat-mat multiplication    --

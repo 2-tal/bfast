@@ -205,6 +205,9 @@ class BFASTMonitorPython(BFASTMonitorBase):
         """
         N = y.shape[0]
 
+        # subset history period
+        y[:5] = np.nan
+
         # compute nan mappings
         nans = np.isnan(y)
         num_nans = np.cumsum(nans)
