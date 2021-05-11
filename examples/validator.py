@@ -74,12 +74,18 @@ def run_bfast_(backend,
             backend=backend,
             verbose=0,
             device_id=0,
+            detailed_results=True,
     )
 
-    #data = data[:,:50,:50]
+    # data = data[:,15:17,12:14]
+    # for i in range(20):
+    #   for j in range(20):
+    #     if data[-2,i,j] == 3874: # 2769, 3222, [3874, nan]
+    #       print(i,j)
+    #       exit(0)
     start_time = time.time()
     if backend == "opencl":
-        model.fit(data, dates, n_chunks=5, nan_value=-32768)
+        model.fit(data, dates, n_chunks=25, nan_value=-32768)
     else:
         model.fit(data, dates, nan_value=-32768)
     end_time = time.time()

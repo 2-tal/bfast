@@ -12,6 +12,7 @@
 
 import "lib/github.com/diku-dk/sorts/insertion_sort"
 import "helpers"
+import "mroc"
 
 -- | implementation is in this entry point
 --   the outer map is distributed directly
@@ -35,19 +36,24 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   let zero = r32 <| i32.i64 <| (N * N + 2 * N + 1) / (N + 1) - N - 1
   let Xt  = intrinsics.opaque <| map (map (+zero)) (copy (transpose X))
 
+  ----------------------------------
+  -- 0. stable history            --
+  ----------------------------------
   -- Switch btwn. "all" and "ROC" based on hist.
   let _hist = if hist == 0 then 0 else 1
   -- Compute stable history.
-  let stable_history = map (\y -> if f32.isnan y[0]
-                                  then 5
-                                  else if y[0] % 2.0f32 == 0.0f32
-                                       then 3
-                                       else 0
-                           ) images
+  let level = 0.05f64
+  let conf = 0.9478989165152716f64
+  -- let conf_f32 = 0.9478989f32
+  -- let Xt_f64 = map (map f64.f32) (copy Xt)
+  let Xt_f64 = mkX_no_trend_64 (i64.i32 k2p2') freq mappingindices
+               |> transpose
+  let images_f64 = map (map f64.f32) images
+  let (hist_inds, _, _) = mhistory_roc level conf Xt_f64 images_f64
   -- Subset history period.
   let images = map2 (\j ->
                        map2 (\i yi -> if i < j then f32.nan else yi) (iota N)
-                    ) stable_history images
+                    ) hist_inds images
   let Xh  = X[:,:n64]
   let Xth = Xt[:n64,:]
   let Yh  = images[:,:n64]

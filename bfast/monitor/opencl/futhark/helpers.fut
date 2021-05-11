@@ -31,6 +31,7 @@ let mkX_with_trend [N] (k2p2: i64) (f: f32) (mappingindices: [N]i32): [k2p2][N]f
                 else if i == 1 then r32 ind
                 else let (i', j') = (r32 (i / 2), r32 ind)
                      let angle = 2f32 * f32.pi * i' * j' / f
+                     -- let angle = 2f32 * f32.pi * i' / f
                      in  if i % 2 == 0 then f32.sin angle
                                        else f32.cos angle
             ) mappingindices
@@ -43,9 +44,28 @@ let mkX_no_trend [N] (k2p2m1: i64) (f: f32) (mappingindices: [N]i32): [k2p2m1][N
                 else let i = i + 1
                      let (i', j') = (r32 (i / 2), r32 ind)
                      let angle = 2f32 * f32.pi * i' * j' / f
+                     -- let angle = 2f32 * f32.pi * i' / f
                      in
                      if i % 2 == 0 then f32.sin angle
                                    else f32.cos angle
+                     -- if i % 2 == 0 then f32.sin (j' * angle)
+                     --               else f32.cos (j' * angle)
+            ) mappingindices
+      ) (iota32 k2p2m1)
+
+let mkX_no_trend_64 [N] (k2p2m1: i64) (f: f32) (mappingindices: [N]i32): [k2p2m1][N]f64 =
+  map (\ i ->
+        map (\ind ->
+                if i == 0 then 1f64
+                else let i = i + 1
+                     let (i', j') = (r64 (i / 2), r64 ind)
+                     let angle = 2f64 * f64.pi * i' * j' / (f64.f32 f)
+                     in
+                     if i % 2 == 0 then f64.sin angle
+                                   else f64.cos angle
+                     -- NEXT STEP IS TO PUT f64.sin/cos in f32 version!!
+                     -- maybe i actually did this already? but maybe
+                     -- also with f64.pi??
             ) mappingindices
       ) (iota32 k2p2m1)
 

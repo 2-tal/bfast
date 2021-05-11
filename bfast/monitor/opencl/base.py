@@ -395,6 +395,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
             results['mosum'] = mosum
             results['bounds'] = bounds
             results['y_pred'] = y_pred
+            # print(hist_i)
         results['breaks'] = breaks
         results['means'] = means
         results['valids'] = Ns

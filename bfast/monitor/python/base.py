@@ -14,6 +14,7 @@ from sklearn import linear_model
 
 from bfast.base import BFASTMonitorBase
 from bfast.monitor.utils import compute_end_history, compute_lam, map_indices
+from .roc import history_roc
 
 
 class BFASTMonitorPython(BFASTMonitorBase):
@@ -212,11 +213,17 @@ class BFASTMonitorPython(BFASTMonitorBase):
         N = y.shape[0]
 
         # subset history period
-        hist = 0
-        if np.isnan(y[0]):
-          hist = 5
-        elif y[0] % 2 == 0:
-          hist = 3
+        nans = np.isnan(y)
+        X_nn = self.X[:, ~nans]
+        y_nn = y[~nans]
+
+        # TODO level and conf from existing PR
+        level = 0.05
+        conf_f64 = 0.9478989165152716
+        # conf_f32 = 0.9478989
+        hist = history_roc(X_nn.astype(np.float64), y_nn.astype(np.float64), level, conf_f64)
+        # TODO handle ns - k2p2 < num regressors; R sets output to nan.
+
         y[:hist] = np.nan
 
         # compute nan mappings
