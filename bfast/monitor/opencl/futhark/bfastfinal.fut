@@ -19,7 +19,7 @@ import "mroc"
 let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
                   (hfrac: f32) (lam: f32) (hist: i64)
                   (mappingindices : [N]i32)
-                  (images : [m][N]f32) =
+                  (images : [m][N]f64) =
   ----------------------------------
   -- 1. make interpolation matrix --
   ----------------------------------
@@ -45,23 +45,14 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   let level = 0.05f64
   let conf = 0.9478989165152716f64
   -- let conf_f32 = 0.9478989f32
-  -- TODO generate f64 X and use them here; then convert to f32 and use in rest?
-  --      Would maybe help with memory usage?
-  -- TODO same for image -- we are the ones who convert it to f32, so just make
-  --      it f64 initially and truncate to f32 later (at which point f64 version
-  --      can be overwritten, probably saving space? dunno).
-  -- let Xt_f64 = map (map f64.f32) (copy Xt)
-  -- let Xt_f64 = mkX_no_trend_64 (i64.i32 k2p2') freq mappingindices
-  --              |> transpose
   let Xt_f64 = (if trend > 0
                 then mkXt_with_trend_64 (i64.i32 k2p2') freq mappingindices
                 else mkXt_no_trend_64 (i64.i32 k2p2') freq mappingindices)
                |> intrinsics.opaque
-  let images_f64 = map (map f64.f32) images
-  let hist_inds = mhistory_roc level conf Xt_f64 images_f64
-  -- Subset history period.
+  let hist_inds = mhistory_roc level conf Xt_f64 images
+  -- Subset history period and convert image to f32.
   let images = map2 (\j ->
-                       map2 (\i yi -> if i < j then f32.nan else yi) (iota N)
+                       map2 (\i yi -> if i < j then f32.nan else f32.f64 yi) (iota N)
                     ) hist_inds images
   let Xh  = X[:,:n64]
   let Xth = Xt[:n64,:]
@@ -198,13 +189,13 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
 entry mainDetailed [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
                   (hfrac: f32) (lam: f32) (hist: i64)
                   (mappingindices : [N]i32)
-                  (images : [m][N]f32) =
+                  (images : [m][N]f64) =
   mainFun trend k n freq hfrac lam hist mappingindices images
 
 entry mainMagnitude [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
                            (hfrac: f32) (lam: f32) (hist: i64)
                            (mappingindices : [N]i32)
-                           (images : [m][N]f32) =
+                           (images : [m][N]f64) =
   let (_, Nss, _, _, _, _, _, breaks, means, magnitudes, _, _, hist_inds) =
     mainFun trend k n freq hfrac lam hist mappingindices images
   in (Nss, breaks, means, magnitudes, hist_inds)
@@ -212,7 +203,7 @@ entry mainMagnitude [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
 entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
                   (hfrac: f32) (lam: f32) (hist: i64)
                   (mappingindices : [N]i32)
-                  (images : [m][N]f32) =
+                  (images : [m][N]f64) =
   let (_, Nss, _, _, _, _, _, breaks, means, _, _, _, hist_inds) =
     mainFun trend k n freq hfrac lam hist mappingindices images
   in (Nss, breaks, means, hist_inds)
@@ -220,10 +211,10 @@ entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
 entry convertToFloat [m][n][p] (nan_value: i16) (images : [m][n][p]i16) =
   map (\block ->
          map (\row ->
-                map (\el -> if el == nan_value then f32.nan else f32.i16 el) row
+                map (\el -> if el == nan_value then f64.nan else f64.i16 el) row
              ) block
       ) images
 
-entry reshapeTransp [m][n][p] (images : [m][n][p]f32) : [][m]f32 =
+entry reshapeTransp [m][n][p] (images : [m][n][p]f64) : [][m]f64 =
   let images' = map (flatten_to (n * p)) images
   in  transpose images'
