@@ -45,11 +45,20 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
   let level = 0.05f64
   let conf = 0.9478989165152716f64
   -- let conf_f32 = 0.9478989f32
+  -- TODO generate f64 X and use them here; then convert to f32 and use in rest?
+  --      Would maybe help with memory usage?
+  -- TODO same for image -- we are the ones who convert it to f32, so just make
+  --      it f64 initially and truncate to f32 later (at which point f64 version
+  --      can be overwritten, probably saving space? dunno).
   -- let Xt_f64 = map (map f64.f32) (copy Xt)
-  let Xt_f64 = mkX_no_trend_64 (i64.i32 k2p2') freq mappingindices
-               |> transpose
+  -- let Xt_f64 = mkX_no_trend_64 (i64.i32 k2p2') freq mappingindices
+  --              |> transpose
+  let Xt_f64 = (if trend > 0
+                then mkXt_with_trend_64 (i64.i32 k2p2') freq mappingindices
+                else mkXt_no_trend_64 (i64.i32 k2p2') freq mappingindices)
+               |> intrinsics.opaque
   let images_f64 = map (map f64.f32) images
-  let (hist_inds, _, _) = mhistory_roc level conf Xt_f64 images_f64
+  let hist_inds = mhistory_roc level conf Xt_f64 images_f64
   -- Subset history period.
   let images = map2 (\j ->
                        map2 (\i yi -> if i < j then f32.nan else yi) (iota N)
