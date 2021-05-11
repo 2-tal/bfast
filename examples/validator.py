@@ -204,11 +204,16 @@ if __name__ == "__main__":
     plt.imshow(valids_diff, cmap="Greys")
     plt.savefig("valids_diff.png")
 
+    eps_f32 = np.finfo(np.float32).eps
+    # expect about half of precision to be round off errors
+    rtol_f32 = np.float32(np.sqrt(eps_f32)) # 0.00034526698 (3e-4)
+    atol_f32 = rtol_f32 * 10                # 0.0034526698  (3e-3)
+    isclose_f32 = lambda a, b: np.isclose(a,b,rtol=rtol_f32,atol=atol_f32)
     print("np.all(breaks_o == breaks_p):", end="")
     test(np.all, np.equal, breaks_o, breaks_p)
     print("np.all(hist_o == hist_p):", end="")
     test(np.all, np.equal, hist_o, hist_p)
-    print("np.all(np.isclose(means_o, means_p)):", end="")
-    test(np.all, np.isclose, means_o, means_p, rel_err=True)
+    print("np.all(isclose_f32(means_o, means_p)):", end="")
+    test(np.all, isclose_f32, means_o, means_p, rel_err=True)
     print("np.all(valids_o == valids_p):", end="")
     test(np.all, np.equal, valids_o, valids_p)
