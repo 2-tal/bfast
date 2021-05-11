@@ -334,3 +334,19 @@ class BFASTMonitor():
             return self._model.valids
 
         raise Exception("Model not yet fitted!")
+
+    @property
+    def history_starts(self):
+        """ Returns index of the start of the stable
+        history period for each pixel
+
+        Returns
+        -------
+         array-like : An array containing indices
+             of starts of stable history periods
+             in the aray data
+        """
+        if self._is_fitted():
+            return self._model.history_starts
+
+        raise Exception("Model not yet fitted!")

@@ -176,7 +176,7 @@ let mainFun [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
             in (MO'', MO', fst_break', mean)
         ) |> unzip4
 
-  in (MO_fsts, Nss, nss, sigmas, MOs, MOs_NN, BOUND, breaks, means, magnitudes, y_errors, y_preds)
+  in (MO_fsts, Nss, nss, sigmas, MOs, MOs_NN, BOUND, breaks, means, magnitudes, y_errors, y_preds, stable_history)
 
 
 -- | Entry points
@@ -190,17 +190,17 @@ entry mainMagnitude [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
                            (hfrac: f32) (lam: f32) (hist: i64)
                            (mappingindices : [N]i32)
                            (images : [m][N]f32) =
-  let (_, Nss, _, _, _, _, _, breaks, means, magnitudes, _, _) =
+  let (_, Nss, _, _, _, _, _, breaks, means, magnitudes, _, _, stable_history) =
     mainFun trend k n freq hfrac lam hist mappingindices images
-  in (Nss, breaks, means, magnitudes)
+  in (Nss, breaks, means, magnitudes, stable_history)
 
 entry main [m][N] (trend: i32) (k: i32) (n: i32) (freq: f32)
                   (hfrac: f32) (lam: f32) (hist: i64)
                   (mappingindices : [N]i32)
                   (images : [m][N]f32) =
-  let (_, Nss, _, _, _, _, _, breaks, means, _, _, _) =
+  let (_, Nss, _, _, _, _, _, breaks, means, _, _, _, stable_history) =
     mainFun trend k n freq hfrac lam hist mappingindices images
-  in (Nss, breaks, means)
+  in (Nss, breaks, means, stable_history)
 
 entry convertToFloat [m][n][p] (nan_value: i16) (images : [m][n][p]i16) =
   map (\block ->

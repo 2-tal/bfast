@@ -111,10 +111,8 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
         self.platform_id = platform_id
         self.device_id = device_id
 
-        if self.history == "all":
-          self.history_num = 0
-        elif self.history == "ROC":
-          self.history_num = 1
+        history_enum = { "all": 0, "ROC": 1 }
+        self.history_num = history_enum[self.history]
 
         # initialize device
         self._init_device(platform_id, device_id)
@@ -238,6 +236,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
         self.breaks = results['breaks']
         self.means = results['means']
         self.valids = results['valids']
+        self.history_starts = results['history_starts']
 
         if self.find_magnitudes or self.detailed_results:
             self.magnitudes = results['magnitudes']
@@ -353,28 +352,21 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
                 means, \
                 magnitudes, \
                 y_error, \
-                y_pred = self.futobj.mainDetailed(trend,
-                                                  self.k,
-                                                  self.n,
-                                                  self.freq,
-                                                  self.hfrac,
-                                                  self.lam,
-                                                  self.history_num,
-                                                  mapped_indices_cl, y_cl)
+                y_pred, \
+                hist = self.futobj.mainDetailed(trend,
+                                                self.k,
+                                                self.n,
+                                                self.freq,
+                                                self.hfrac,
+                                                self.lam,
+                                                self.history_num,
+                                                mapped_indices_cl, y_cl)
         elif self.find_magnitudes:
             Ns, \
                 breaks, \
                 means, \
-                magnitudes = self.futobj.mainMagnitude(trend,
-                                                       self.k,
-                                                       self.n,
-                                                       self.freq,
-                                                       self.hfrac,
-                                                       self.lam,
-                                                       self.history_num,
-                                                       mapped_indices_cl, y_cl)
-        else:
-            Ns, breaks, means = self.futobj.main(trend,
+                magnitudes, \
+                hist = self.futobj.mainMagnitude(trend,
                                                  self.k,
                                                  self.n,
                                                  self.freq,
@@ -382,6 +374,15 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
                                                  self.lam,
                                                  self.history_num,
                                                  mapped_indices_cl, y_cl)
+        else:
+            Ns, breaks, means, hist = self.futobj.main(trend,
+                                                       self.k,
+                                                       self.n,
+                                                       self.freq,
+                                                       self.hfrac,
+                                                       self.lam,
+                                                       self.history_num,
+                                                       mapped_indices_cl, y_cl)
 
         end = time.time()
 
@@ -397,6 +398,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
         results['breaks'] = breaks
         results['means'] = means
         results['valids'] = Ns
+        results['history_starts'] = hist
 
         if self.find_magnitudes or self.detailed_results:
             results['magnitudes'] = magnitudes
@@ -415,6 +417,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
         results['breaks'] = results['breaks'].get().reshape(oshape[1:])
         results['means'] = results['means'].get().reshape(oshape[1:])
         results['valids'] = results['valids'].get().T.reshape(oshape[1:])
+        results['history_starts'] = results['history_starts'].get().T.reshape(oshape[1:])
 
         if self.find_magnitudes or self.detailed_results:
             results['magnitudes'] = results['magnitudes'].get().reshape(oshape[1:])
@@ -451,6 +454,12 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
             results['valids'] = numpy.concatenate([results['valids'], res['valids']], axis=0)
         else:
             results['valids'] = res['valids']
+
+        if 'history_starts' in results.keys():
+            results['history_starts'] = numpy.concatenate([results['history_starts'],
+                                                           res['history_starts']], axis=0)
+        else:
+            results['history_starts'] = res['history_starts']
 
         if self.find_magnitudes or self.detailed_results:
             if 'magnitudes' in results.keys():
