@@ -65,7 +65,7 @@ def run_bfast_(backend,
     # fit BFASTMontiro model
     model = BFASTMonitor(
             start_monitor,
-            history="all",
+            history="ROC",
             freq=freq,
             k=k,
             hfrac=hfrac,
@@ -227,7 +227,5 @@ if __name__ == "__main__":
     test(np.all, np.equal, hist_o, hist_p)
     print("np.all(np.isclose(means_o, means_p)):", end="")
     test(np.all, np.isclose, means_o, means_p, rel_err=True)
-    print("np.all(np.isclose(magnitudes_o, magnitudes_p)):", end="")
-    test(np.all, np.isclose, magnitudes_o, magnitudes_p, rel_err=True)
     print("np.all(valids_o == valids_p):", end="")
     test(np.all, np.equal, valids_o, valids_p)
