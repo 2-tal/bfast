@@ -304,7 +304,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
 
     def _fit_single_preprocess(self, data, dates, nan_value):
         start = time.time()
-        mapped_indices = map_indices(dates).astype(numpy.int32)
+        mapped_indices = map_indices(dates).astype(numpy.int64)
         N = data.shape[0]
         self.n = compute_end_history(dates, self.start_monitor)
         self.lam = compute_lam(N, self.hfrac, self.level, self.period)

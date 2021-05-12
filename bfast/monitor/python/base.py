@@ -222,7 +222,7 @@ class BFASTMonitorPython(BFASTMonitorBase):
         conf_f64 = 0.9478989165152716
         # conf_f32 = 0.9478989
         hist = history_roc(X_nn.astype(np.float64), y_nn.astype(np.float64), level, conf_f64)
-        # TODO handle ns - k2p2 < num regressors; R sets output to nan.
+        # TODO handle ns - hist < num regressors; R sets output to nan.
 
         y[:hist] = np.nan
 
