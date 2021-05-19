@@ -43,9 +43,9 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
   -- Compute stable history.
   let level = 0.05f64
   let conf = 0.9478989165152716f64
-  -- let conf_f64 = 0.9478989f64
-  let hist_inds = mhistory_roc level conf Xt images
-  -- Subset history period and convert image to f64.
+  -- let conf_f32 = 0.9478989f32
+  let hist_inds = mhistory_roc level conf Xt images |> opaque
+  -- Set stable history period.
   let images = map2 (\j ->
                        map2 (\i yi -> if i < j then f64.nan else yi) (iota N)
                     ) hist_inds images
