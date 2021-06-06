@@ -212,18 +212,17 @@ class BFASTMonitorPython(BFASTMonitorBase):
         """
         N = y.shape[0]
 
-        # subset history period
-        nans = np.isnan(y)
-        X_nn = self.X[:, ~nans]
-        y_nn = y[~nans]
-
+        # stable history period
+        Xh = self.X[:, :self.n]
+        yh = y[:self.n]
+        nans = np.isnan(yh)
+        Xh_nn = Xh[:,~nans]
+        yh_nn = yh[~nans]
         # TODO level and conf from existing PR
         level = 0.05
         conf_f64 = 0.9478989165152716
-        # conf_f32 = 0.9478989
-        hist = history_roc(X_nn.astype(np.float64), y_nn.astype(np.float64), level, conf_f64)
+        hist = history_roc(Xh_nn.astype(np.float64), yh_nn.astype(np.float64), level, conf_f64)
         # TODO handle ns - hist < num regressors; R sets output to nan.
-
         y[:hist] = np.nan
 
         # compute nan mappings
@@ -317,6 +316,7 @@ class BFASTMonitorPython(BFASTMonitorBase):
         else:
             first_break = -1
 
+        # TODO output history index in data with nans (use val_inds before -n)
         return first_break, mean, magnitude, Ns, hist
 
     def get_timers(self):

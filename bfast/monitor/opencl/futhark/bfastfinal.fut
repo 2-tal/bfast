@@ -35,6 +35,9 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
   let zero = f64.i64 <| (N * N + 2 * N + 1) / (N + 1) - N - 1
   let Xt  = intrinsics.opaque <| map (map (+zero)) (copy (transpose X))
 
+  let Xh  = X[:,:n]
+  let Xth = Xt[:n,:]
+  let Yh  = images[:,:n]
   ----------------------------------
   -- 0. stable history            --
   ----------------------------------
@@ -44,13 +47,11 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
   let level = 0.05f64
   let conf = 0.9478989165152716f64
   -- let conf_f32 = 0.9478989f32
-  let hist_inds = mhistory_roc level conf Xt images |> opaque
+  let hist_inds = mhistory_roc level conf Xth Yh
   -- Set stable history period.
   let images = map2 (\j ->
                        map2 (\i yi -> if i < j then f64.nan else yi) (iota N)
                     ) hist_inds images
-  let Xh  = X[:,:n]
-  let Xth = Xt[:n,:]
   let Yh  = images[:,:n]
 
   ----------------------------------
