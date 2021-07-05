@@ -173,7 +173,7 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
                              else adjustValInds n ns Ns val_inds fst_break
             let fst_break' = if ns <=5 || Ns-ns <= 5 then -2 else fst_break'
             -- The computation of MO'' should be moved just after MO' to make bounds consistent
-                                                                                                                                                                                                                            let val_inds' = map (adjustValInds n ns Ns val_inds) (iota (N - n))
+            let val_inds' = map (adjustValInds n ns Ns val_inds) (iota (N - n))
             let MO'' = scatter (replicate (N - n) f64.nan) val_inds' MO'
             in (MO'', MO', fst_break', mean)
         ) |> unzip4

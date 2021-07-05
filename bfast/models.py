@@ -328,7 +328,7 @@ class BFASTMonitor():
         -------
          array-like : An array containing the number
              of valid values for each pixel in the
-             aray data
+             array data
         """
         if self._is_fitted():
             return self._model.valids
@@ -344,7 +344,7 @@ class BFASTMonitor():
         -------
          array-like : An array containing indices
              of starts of stable history periods
-             in the aray data
+             in the array data
         """
         if self._is_fitted():
             return self._model.history_starts
