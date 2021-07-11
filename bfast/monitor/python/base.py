@@ -223,10 +223,10 @@ class BFASTMonitorPython(BFASTMonitorBase):
           nans = np.isnan(yh)
           Xh_nn = Xh[:,~nans]
           yh_nn = yh[~nans]
-          # TODO level and conf from existing PR
-          level = 0.05
-          conf_f64 = 0.9478989165152716
-          hist = history_roc(Xh_nn.astype(np.float64), yh_nn.astype(np.float64), level, self.conf_ROC)
+          hist = history_roc(Xh_nn.astype(np.float64),
+                             yh_nn.astype(np.float64),
+                             self.level,
+                             self.conf_ROC)
           # TODO handle ns - hist < num regressors; R sets output to nan.
           y[:hist] = np.nan
 
