@@ -213,17 +213,19 @@ class BFASTMonitorPython(BFASTMonitorBase):
         N = y.shape[0]
 
         # stable history period
-        Xh = self.X[:, :self.n]
-        yh = y[:self.n]
-        nans = np.isnan(yh)
-        Xh_nn = Xh[:,~nans]
-        yh_nn = yh[~nans]
-        # TODO level and conf from existing PR
-        level = 0.05
-        conf_f64 = 0.9478989165152716
-        hist = history_roc(Xh_nn.astype(np.float64), yh_nn.astype(np.float64), level, conf_f64)
-        # TODO handle ns - hist < num regressors; R sets output to nan.
-        y[:hist] = np.nan
+        hist = 0
+        if self.history == "ROC":
+          Xh = self.X[:, :self.n]
+          yh = y[:self.n]
+          nans = np.isnan(yh)
+          Xh_nn = Xh[:,~nans]
+          yh_nn = yh[~nans]
+          # TODO level and conf from existing PR
+          level = 0.05
+          conf_f64 = 0.9478989165152716
+          hist = history_roc(Xh_nn.astype(np.float64), yh_nn.astype(np.float64), level, conf_f64)
+          # TODO handle ns - hist < num regressors; R sets output to nan.
+          y[:hist] = np.nan
 
         # compute nan mappings
         nans = np.isnan(y)

@@ -111,7 +111,7 @@ class BFASTMonitorOpenCL(BFASTMonitorBase):
         self.platform_id = platform_id
         self.device_id = device_id
 
-        history_enum = { "all": 0, "ROC": 1 }
+        history_enum = { "ROC": -1, "all": 0 }
         self.history_num = history_enum[self.history]
 
         # initialize device

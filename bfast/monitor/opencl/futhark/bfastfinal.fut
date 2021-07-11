@@ -39,15 +39,13 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
   let Xth = Xt[:n,:]
   let Yh  = images[:,:n]
   ----------------------------------
-  -- 0. stable history            --
+  -- 2. stable history            --
   ----------------------------------
-  -- Switch btwn. "all" and "ROC" based on hist.
-  let _hist = if hist == 0 then 0 else 1
-  -- Compute stable history.
   let level = 0.05f64
   let conf = 0.9478989165152716f64
-  -- let conf_f32 = 0.9478989f32
-  let hist_inds = mhistory_roc level conf Xth Yh
+  let hist_inds = if hist == -1
+                  then mhistory_roc level conf Xth Yh
+                  else replicate m hist
   -- Set stable history period.
   let images = map2 (\j ->
                        map2 (\i yi -> if i < j then f64.nan else yi) (iota N)
@@ -55,17 +53,17 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
   let Yh  = images[:,:n]
 
   ----------------------------------
-  -- 2. mat-mat multiplication    --
+  -- 3. mat-mat multiplication    --
   ----------------------------------
   let Xsqr = intrinsics.opaque <| map (matmul_filt Xh Xth) Yh
 
   ----------------------------------
-  -- 3. matrix inversion          --
+  -- 4. matrix inversion          --
   ----------------------------------
   let Xinv = intrinsics.opaque <| map mat_inv Xsqr
 
   ---------------------------------------------
-  -- 4. several matrix-vector multiplication --
+  -- 5. several matrix-vector multiplication --
   ---------------------------------------------
   let beta0  = map (matvecmul_row_filt Xh) Yh   -- [m][2k+2]
                |> intrinsics.opaque
@@ -80,7 +78,7 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
                                     --   (transpose X) instead of Xt
 
   ---------------------------------------------
-  -- 5. filter etc.                          --
+  -- 6. filter etc.                          --
   ---------------------------------------------
   let (Nss, y_errors, val_indss) = intrinsics.opaque <| unzip3 <|
     map2 (\y y_pred ->
@@ -92,7 +90,7 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
          ) images y_preds
 
   ------------------------------------------------
-  -- 6. ns and sigma (can be fused with above)  --
+  -- 7. ns and sigma (can be fused with above)  --
   ------------------------------------------------
   let (hs, nss, sigmas) = intrinsics.opaque <| unzip3 <|
     map2 (\yh y_error ->
@@ -106,7 +104,7 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
          ) Yh y_errors
 
   ---------------------------------------------
-  -- 7. moving sums first and bounds:        --
+  -- 8. moving sums first and bounds:        --
   ---------------------------------------------
   let hmax = reduce_comm (i64.max) 0 hs
   let MO_fsts = zip3 y_errors nss hs
@@ -124,7 +122,7 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
                   ) (iota (N-n))
 
   ---------------------------------------------
-  -- 8. error magnitude computation:             --
+  -- 9. error magnitude computation:         --
   ---------------------------------------------
   let magnitudes = zip3 Nss nss y_errors |>
     map (\(Ns, ns, y_error) ->
@@ -146,7 +144,7 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
         ) |> intrinsics.opaque
 
   ---------------------------------------------
-  -- 9. moving sums computation:             --
+  -- 10. moving sums computation:            --
   ---------------------------------------------
   let (MOs, MOs_NN, breaks, means) = zip (zip4 Nss nss sigmas hs)
                                          (zip3 MO_fsts y_errors val_indss) |>
