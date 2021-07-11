@@ -17,7 +17,7 @@ import "mroc"
 -- | implementation is in this entry point
 --   the outer map is distributed directly
 let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
-                  (hfrac: f64) (lam: f64) (hist: i64)
+                  (hfrac: f64) (lam: f64) (hist: i64) (conf: f64)
                   (mappingindices : [N]i64)
                   (images : [m][N]f64) =
   ----------------------------------
@@ -42,7 +42,6 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
   -- 2. stable history            --
   ----------------------------------
   let level = 0.05f64
-  let conf = 0.9478989165152716f64
   let hist_inds = if hist == -1
                   then mhistory_roc level conf Xth Yh
                   else replicate m hist
@@ -181,25 +180,25 @@ let mainFun [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
 
 -- | Entry points
 entry mainDetailed [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
-                  (hfrac: f64) (lam: f64) (hist: i64)
+                  (hfrac: f64) (lam: f64) (hist: i64) (conf: f64)
                   (mappingindices : [N]i64)
                   (images : [m][N]f64) =
-  mainFun trend k n freq hfrac lam hist mappingindices images
+  mainFun trend k n freq hfrac lam hist conf mappingindices images
 
 entry mainMagnitude [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
-                           (hfrac: f64) (lam: f64) (hist: i64)
+                           (hfrac: f64) (lam: f64) (hist: i64) (conf: f64)
                            (mappingindices : [N]i64)
                            (images : [m][N]f64) =
   let (_, Nss, _, _, _, _, _, breaks, means, magnitudes, _, _, hist_inds) =
-    mainFun trend k n freq hfrac lam hist mappingindices images
+    mainFun trend k n freq hfrac lam hist conf mappingindices images
   in (Nss, breaks, means, magnitudes, hist_inds)
 
 entry main [m][N] (trend: i64) (k: i64) (n: i64) (freq: f64)
-                  (hfrac: f64) (lam: f64) (hist: i64)
+                  (hfrac: f64) (lam: f64) (hist: i64) (conf: f64)
                   (mappingindices : [N]i64)
                   (images : [m][N]f64) =
   let (_, Nss, _, _, _, _, _, breaks, means, _, _, _, hist_inds) =
-    mainFun trend k n freq hfrac lam hist mappingindices images
+    mainFun trend k n freq hfrac lam hist conf mappingindices images
   in (Nss, breaks, means, hist_inds)
 
 entry convertToFloat [m][n][p] (nan_value: i16) (images : [m][n][p]i16) =

@@ -13,7 +13,9 @@ np.set_printoptions(suppress=True)
 from sklearn import linear_model
 
 from bfast.base import BFASTMonitorBase
-from bfast.monitor.utils import compute_end_history, compute_lam, map_indices
+from bfast.monitor.utils import (
+    compute_end_history, compute_lam, map_indices, compute_lam_brownian
+)
 from .roc import history_roc
 
 
@@ -151,6 +153,7 @@ class BFASTMonitorPython(BFASTMonitorBase):
 
         # period = data.shape[0] / np.float(self.n)
         self.lam = compute_lam(data.shape[0], self.hfrac, self.level, self.period)
+        self.conf_ROC = compute_lam_brownian(self.level)
 
         if self.use_mp:
             print("Python backend is running in parallel using {} threads".format(mp.cpu_count()))
@@ -223,7 +226,7 @@ class BFASTMonitorPython(BFASTMonitorBase):
           # TODO level and conf from existing PR
           level = 0.05
           conf_f64 = 0.9478989165152716
-          hist = history_roc(Xh_nn.astype(np.float64), yh_nn.astype(np.float64), level, conf_f64)
+          hist = history_roc(Xh_nn.astype(np.float64), yh_nn.astype(np.float64), level, self.conf_ROC)
           # TODO handle ns - hist < num regressors; R sets output to nan.
           y[:hist] = np.nan
 
