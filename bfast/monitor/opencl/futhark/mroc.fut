@@ -9,27 +9,13 @@ module stats = mk_statistics f64
 -- but ignoring nans.
 let sample_sd_nan [m] (xs: [m]f64) (num_non_nan: i64) =
   let nf64 = f64.i64 num_non_nan
-  -- Associativity proof.
-  -- Let `+` be add_nan. For this to be associative,
-  --   (a + b) + c = a + (b + c)
-  -- must hold. Each operand can either be nan or not.
-  -- So we get the following truth table:
-  -- isnan a | isnan b | isnan c | LHS                 | RHS
-  --       T |       T |       T | a + c = c = nan     | a + b = b = nan
-  --       F |       T |       T | a + c = a           | a + b = a
-  --       F |       F |       T | a + b               | a + b
-  --       F |       F |       F | a + b + c           | a + b + c
-  --       T |       F |       F | b + c               | b + c
-  --       T |       T |       F | b + c = nan + c = c | a + c = nan + c = c
-  --       T |       F |       T | b + c = b + nan = b | a + b = nan + b = b
-  --       F |       T |       F | a + c               | a + c
-  -- Of course this is a lie because we operate on floats.
+  -- add_nan is associative.
+  -- TODO prove commutativity and use `reduce_comm` (probably no speedup)
   let add_nan a b = if f64.isnan a
                     then b
                     else if f64.isnan b
                          then a
                          else a + b
-  -- TODO prove commutativity and use `reduce_comm` (probably no speedup)
   let x_mean = (reduce add_nan 0 xs)/nf64
   let diffs = map (\x -> if f64.isnan x then 0 else (x - x_mean)**2) xs
   in (f64.sum diffs)/(nf64 - 1) |> f64.sqrt
@@ -38,7 +24,7 @@ let sample_sd_nan [m] (xs: [m]f64) (num_non_nan: i64) =
 -- Outputs recursive CUSUM and number of non nan values _excluding_
 -- the prepended zero for each `y` in `ys`.
 let rcusum [m][N][k] (X: [N][k]f64) (ys: [m][N]f64) =
-  let (wTs, _, Nbar, ns) = mrecresid X ys
+  let (wTs, Nbar, ns) = mrecresid X ys
   let ws = transpose wTs
   -- Standardize and insert 0 in front.
   let Nmk = Nbar-k+1
@@ -85,13 +71,10 @@ let boundary confidence N nm1: [N]f64 =
                 else f64.nan
          ) (iota N)
 
--- TODO handle all nan input
--- TODO fuse maps around inner sizes
 -- Map distributed stable history computation.
 entry mhistory_roc [m][N][k] level confidence
                              (X: [N][k]f64) (ys: [m][N]f64) =
   let (rocs, Nbar, nns) = rcusum (reverse X) (map reverse ys)
-  -- TODO fuse pval and bounds and ind, if same inner sizes
   let pvals = map2 sctest rocs nns
   let n = Nbar - k + 1
   let bounds = map (boundary confidence n) nns
@@ -122,7 +105,7 @@ entry mhistory_roc_inline [m][N][k] level confidence
   -- Empircal fluctuation process containing recursive residuals.
   -- Outputs recursive CUSUM and number of non nan values _excluding_
   -- the prepended zero for each `y` in `ys`.
-  let (wTs, _, Nbar, ns) = mrecresid (reverse X) (map reverse ys)
+  let (wTs, Nbar, ns) = mrecresid (reverse X) (map reverse ys)
   let ws = transpose wTs
   let Nmkp1 = Nbar-k+1
   in map2 (\w npk -> -- INNER SIZE Nmkp1 (can be split into Nmkp1 and Nmkp1-1)
