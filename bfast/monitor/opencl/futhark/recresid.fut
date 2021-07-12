@@ -1,8 +1,6 @@
-import "lib/github.com/diku-dk/linalg/linalg"
 import "lib/github.com/nhey/lm/lm"
 import "helpers"
 
-module linalg = mk_linalg f64
 module lm = lm_f64
 
 let mean_abs [n] (xs: [n]f64) =
