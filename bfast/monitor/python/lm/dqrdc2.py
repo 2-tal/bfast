@@ -152,11 +152,7 @@ def dqrdc2(x, ldx, n, p, tol=1e-7):
         #
         for j in range(l+1, p):
           t = -1*np.dot(x[l:,l], x[l:,j])/x[l,l]
-          # print("Trace at dqrdc2.py.:..:..-..:", l, j, x[l:,j])
-          # print("Trace at dqrdc2.py.:..:..-..:", l, j, x[l:,l])
-          # print("Trace at dqrdc2.py.:..:..-..:", l, j, t)
           x[l:,j] = x[l:,j] + t*x[l:,l]
-          # print("Trace at dqrdc2.py.:..:..-..:", l, j, x[l:,j])
           if qraux[j] != 0.0:
             tt = 1.0 - (abs(x[l,j])/qraux[j])**2
             tt = max(tt, 0.0)
