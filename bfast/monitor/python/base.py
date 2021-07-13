@@ -321,7 +321,6 @@ class BFASTMonitorPython(BFASTMonitorBase):
         else:
             first_break = -1
 
-        # TODO output history index in data with nans (use val_inds before -n)
         return first_break, mean, magnitude, Ns, hist
 
     def get_timers(self):

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import stats, optimize
 from bfast.monitor.utils import pval_brownian_motion_max
-from .lm.lm import lm
+from .lm import lm
 
 # BFAST strucchange-cpp armadillo version of approx. equal, which is
 # an absolute difference |x - y| <= tol.
